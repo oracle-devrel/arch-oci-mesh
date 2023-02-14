@@ -1,0 +1,27 @@
+apiVersion: oci.oracle.com/v1beta1
+kind: AutonomousDatabases
+metadata:
+  name: mesh_dbname
+  namespace: mesh_name
+spec:
+  compartmentId: mesh_compartment
+  displayName: mesh_dbname
+  dbName: mesh_dbname
+  dbWorkload: OLTP
+  isDedicated: false
+  dbVersion: 19c
+  dataStorageSizeInTBs: 1
+  cpuCoreCount: 1
+  adminPassword:
+    secret:
+      secretName: admin-secret
+  isAutoScalingEnabled: false
+  isFreeTier: false
+  licenseModel: BRING_YOUR_OWN_LICENSE
+  wallet:
+    walletName: wallet
+    walletPassword:
+      secret:
+        secretName: wallet-secret
+  freeformTags:
+  definedTags: 

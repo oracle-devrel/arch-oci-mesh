@@ -1,0 +1,26 @@
+apiVersion: servicemesh.oci.oracle.com/v1beta1
+kind: VirtualServiceRouteTable
+metadata:
+  name: home-route-table
+  namespace: mesh_name
+spec:
+  compartmentId: mesh_compartment
+  virtualService:
+    ref:
+      name: home
+  routeRules:
+    - httpRoute:
+        destinations:
+          - virtualDeployment:
+              ref:
+                name: home-v1
+            weight: home_v1_weight
+            port: 3000
+          - virtualDeployment:
+              ref:
+                name: home-v2
+            weight: home_v2_weight
+            port: 3000
+        isGrpc: false
+        path: /
+        pathType: PREFIX

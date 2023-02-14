@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Mika Rinne, and Bootstrap contributors">
+    <title>Pricing admin · Bootstrap v5.0</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/pricing/">
+
+    <!-- Bootstrap core CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+    </style>
+
+    
+    <!-- Custom styles for this template -->
+    <link href="admin.css" rel="stylesheet">
+  </head>
+  <body>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="check" viewBox="0 0 16 16">
+    <title>Check</title>
+    <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+  </symbol>
+</svg>
+
+<div class="container" id="pricing">
+    
+    <div class="container py-3">
+    
+      <main>
+        <form class="form-horizontal" role="form">    
+          <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+              
+              <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                  <div class="card-header py-3">
+                    <h4 class="my-0 fw-normal">Free</h4>
+                  </div>
+                  <div class="card-body">
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="free_monthly">Monthly $</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="free_monthly" v-model="data.free.price.monthly" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="free_users">Users</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="free_users" v-model="data.free.price.users" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="free_storage">Storage GB</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="free_storage" v-model="data.free.price.storage" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="free_support">Support</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="free_support" v-model="data.free.price.support" placeholder=""/>
+                        </div>
+                      </div>    
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="free_public">Public</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="free_public" v-model="data.free.options.public" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="free_private">Private</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="free_private" v-model="data.free.options.private" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="free_permissions">Permissions</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="free_permissions" v-model="data.free.options.permissions" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="free_sharing">Sharing</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="free_sharing" v-model="data.free.options.sharing" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="free_unlimited">Unlimited</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="free_unlimited" v-model="data.free.options.unlimited" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="free_extrasec">Extra Sec</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="free_extrasec" v-model="data.free.options.extrasec" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="col-md-8 pull-left">
+                        <div class="col-md-8">
+                          <button type="button" class="btn btn-primary" v-on:click="putPriceFree">Save</button>
+                        </div>
+                      </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                  <div class="card-header py-3">
+                    <h4 class="my-0 fw-normal">Pro</h4>
+                  </div>
+                  <div class="card-body">
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="pro_monthly">Monthly $</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="pro_monthly" v-model="data.pro.price.monthly" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="pro_users">Users</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="pro_users" v-model="data.pro.price.users" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="pro_storage">Storage GB</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="pro_storage" v-model="data.pro.price.storage" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="pro_support">Support</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="pro_support" v-model="data.pro.price.support" placeholder=""/>
+                        </div>
+                      </div>   
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="pro_public">Public</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="pro_public" v-model="data.pro.options.public" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="pro_private">Private</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="pro_private" v-model="data.pro.options.private" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="pro_permissions">Permissions</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="pro_permissions" v-model="data.pro.options.permissions" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="pro_sharing">Sharing</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="pro_sharing" v-model="data.pro.options.sharing" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="pro_unlimited">Unlimited</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="pro_unlimited" v-model="data.pro.options.unlimited" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="pro_extrasec">Extra Sec</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="pro_extrasec" v-model="data.pro.options.extrasec" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="col-md-8 pull-left">
+                        <div class="col-md-8">
+                          <button type="button" class="btn btn-primary" v-on:click="putPricePro">Save</button>
+                        </div>
+                      </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                  <div class="card-header py-3">
+                    <h4 class="my-0 fw-normal">Enterprise</h4>
+                  </div>
+                  <div class="card-body">
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="enterprise_monthly">Monthly $</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="enterprise_monthly" v-model="data.enterprise.price.monthly" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="enterprise_users">Users</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="enterprise_users" v-model="data.enterprise.price.users" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="enterprise_storage">Storage GB</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="enterprise_storage" v-model="data.enterprise.price.storage" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="enterprise_support">Support</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="enterprise_support" v-model="data.enterprise.price.support" placeholder=""/>
+                        </div>
+                      </div>    
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="enterprise_public">Public</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="enterprise_public" v-model="data.enterprise.options.public" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="enterprise_private">Private</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="enterprise_private" v-model="data.enterprise.options.private" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="enterprise_permissions">Permissions</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="enterprise_permissions" v-model="data.enterprise.options.permissions" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="enterprise_sharing">Sharing</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="enterprise_sharing" v-model="data.enterprise.options.sharing" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="enterprise_unlimited">Unlimited</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="enterprise_unlimited" v-model="data.enterprise.options.unlimited" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label class="col-md-5 control-label" for="enterprise_extrasec">Extra Sec</label>
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="enterprise_extrasec" v-model="data.enterprise.options.extrasec" placeholder=""/>
+                        </div>
+                      </div>
+                      <div class="col-md-8 pull-left">
+                        <div class="col-md-8">
+                          <button type="button" class="btn btn-primary" v-on:click="putPriceEnterprise">Save</button>
+                        </div>
+                      </div>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+        </form>
+      </main>
+  
+    </div>
+</div>
+    
+<script src="https://code.jquery.com/jquery-2.1.3.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="vue.js"></script>
+    
+  </body>
+</html>

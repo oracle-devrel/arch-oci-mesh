@@ -1,0 +1,920 @@
+---
+# Source: grafana/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/instance: grafana
+  name: grafana
+  namespace: monitoring
+---
+# Source: grafana/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/instance: grafana
+data:
+  grafana.ini: |
+    [analytics]
+    check_for_updates = false
+    [grafana_net]
+    url = https://grafana.net
+    [log]
+    mode = console
+    [paths]
+    data = /var/lib/grafana/
+    logs = /var/log/grafana
+    plugins = /var/lib/grafana/plugins
+    provisioning = /etc/grafana/provisioning
+ 
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+    - access: proxy
+      editable: true
+      isDefault: true
+      jsonData:
+        timeInterval: 5s
+      name: Prometheus
+      orgId: 1
+      type: prometheus
+      url: http://prometheus:9090
+  dashboardproviders.yaml: |
+    apiVersion: 1
+    providers:
+    - disableDeletion: false
+      folder: mesh_name
+      name: mesh_name
+      options:
+        path: /var/lib/grafana/dashboards/mesh_name
+      orgId: 1
+      type: file
+---
+# Source: grafana/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/instance: grafana
+spec:
+  type: LoadBalancer
+  ports:
+    - name: service
+      port: 80
+      protocol: TCP
+      targetPort: 3000
+ 
+  selector:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/instance: grafana
+---
+# Source: grafana/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/instance: grafana
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: grafana
+      app.kubernetes.io/instance: grafana
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: grafana
+        app.kubernetes.io/instance: grafana
+        app: grafana
+    spec:
+      serviceAccountName: grafana
+      securityContext:
+        fsGroup: 472
+        runAsGroup: 472
+        runAsUser: 472
+      containers:
+        - name: grafana
+          image: "grafana/grafana:7.5.2"
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: config
+              mountPath: "/etc/grafana/grafana.ini"
+              subPath: grafana.ini
+            - name: storage
+              mountPath: "/var/lib/grafana"
+            - name: dashboards-mesh_name
+              mountPath: "/var/lib/grafana/dashboards/mesh_name"
+            - name: config
+              mountPath: "/etc/grafana/provisioning/datasources/datasources.yaml"
+              subPath: datasources.yaml
+            - name: config
+              mountPath: "/etc/grafana/provisioning/dashboards/dashboardproviders.yaml"
+              subPath: dashboardproviders.yaml
+          ports:
+            - name: service
+              containerPort: 3000
+              protocol: TCP
+            - name: grafana
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: GF_PATHS_DATA
+              value: /var/lib/grafana/
+            - name: GF_PATHS_LOGS
+              value: /var/log/grafana
+            - name: GF_PATHS_PLUGINS
+              value: /var/lib/grafana/plugins
+            - name: GF_PATHS_PROVISIONING
+              value: /etc/grafana/provisioning
+            - name: "GF_AUTH_ANONYMOUS_ENABLED"
+              value: "true"
+            - name: "GF_AUTH_ANONYMOUS_ORG_ROLE"
+              value: "Admin"
+            - name: "GF_AUTH_BASIC_ENABLED"
+              value: "false"
+            - name: "GF_SECURITY_ADMIN_PASSWORD"
+              value: "-"
+            - name: "GF_SECURITY_ADMIN_USER"
+              value: "-"
+          livenessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 60
+            timeoutSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+          resources: {}
+      volumes:
+        - name: config
+          configMap:
+            name: grafana
+        - name: dashboards-mesh_name
+          configMap:
+            name: mesh_name-grafana-dashboards
+        - name: storage
+          emptyDir: {}
+---
+apiVersion: v1
+data:
+  bookinfo-dashboard.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": "-- Grafana --",
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "gnetId": null,
+      "graphTooltip": 0,
+      "iteration": 1660728933427,
+      "links": [],
+      "panels": [
+        {
+          "collapsed": false,
+          "datasource": null,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 16,
+          "panels": [],
+          "title": "Home",
+          "type": "row"
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": null,
+          "description": "",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 0,
+            "y": 1
+          },
+          "hiddenSeries": false,
+          "id": 8,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": true,
+            "min": true,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": false
+          },
+          "percentage": false,
+          "pluginVersion": "7.5.2",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "exemplar": false,
+              "expr": "clamp_max((sum(rate(envoy_http_ingress_http_downstream_rq_2xx{virtual_service_name=\"mesh_name/home\"}[$successRateGranularity]) + rate(envoy_http_ingress_http_downstream_rq_3xx{virtual_service_name=\"mesh_name/home\"}[$successRateGranularity]) + rate(envoy_http_ingress_http_downstream_rq_4xx{virtual_service_name=\"mesh_name/home\"}[$successRateGranularity])) by (virtual_service_name)) / sum(rate(envoy_http_ingress_http_downstream_rq_total{virtual_service_name=\"mesh_name/home\"}[$successRateGranularity])) by (virtual_service_name), 1)",
+              "interval": "",
+              "legendFormat": "home",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Success Rate",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "percentunit",
+              "label": "",
+              "logBase": 1,
+              "max": "1",
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": null,
+          "description": "",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 12,
+            "y": 1
+          },
+          "hiddenSeries": false,
+          "id": 20,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": true,
+            "min": true,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null as zero",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "7.5.2",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "exemplar": false,
+              "expr": "histogram_quantile(0.95, sum(rate(envoy_http_ingress_http_downstream_rq_time_bucket{virtual_service_name=\"mesh_name/home\"}[$latencyGranularity])) by (le))",
+              "interval": "",
+              "legendFormat": "home",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Latency (p95)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ms",
+              "label": "",
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": null,
+          "description": "",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 0,
+            "y": 10
+          },
+          "hiddenSeries": false,
+          "id": 21,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": true,
+            "min": true,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "7.5.2",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "exemplar": false,
+              "expr": "clamp_max((sum(rate(envoy_http_ingress_http_downstream_rq_2xx{virtual_deployment_name=\"mesh_name/home-v1\"}[$successRateGranularity]) + rate(envoy_http_ingress_http_downstream_rq_3xx{virtual_deployment_name=\"mesh_name/home-v1\"}[$successRateGranularity]) + rate(envoy_http_ingress_http_downstream_rq_4xx{virtual_deployment_name=\"mesh_name/home-v1\"}[$successRateGranularity])) by (virtual_deployment_name)) / sum(rate(envoy_http_ingress_http_downstream_rq_total{virtual_deployment_name=\"mesh_name/home-v1\"}[$successRateGranularity])) by (virtual_deployment_name), 1)",
+              "instant": false,
+              "interval": "",
+              "legendFormat": "v1",
+              "refId": "A"
+            },
+            {
+              "exemplar": false,
+              "expr": "clamp_max((sum(rate(envoy_http_ingress_http_downstream_rq_2xx{virtual_deployment_name=\"mesh_name/home-v2\"}[$successRateGranularity]) + rate(envoy_http_ingress_http_downstream_rq_3xx{virtual_deployment_name=\"mesh_name/home-v2\"}[$successRateGranularity]) + rate(envoy_http_ingress_http_downstream_rq_4xx{virtual_deployment_name=\"mesh_name/home-v2\"}[$successRateGranularity])) by (virtual_deployment_name)) / sum(rate(envoy_http_ingress_http_downstream_rq_total{virtual_deployment_name=\"mesh_name/home-v2\"}[$successRateGranularity])) by (virtual_deployment_name), 1)",
+              "hide": false,
+              "instant": false,
+              "interval": "",
+              "legendFormat": "v2",
+              "refId": "B"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Success Rate",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "percentunit",
+              "label": "",
+              "logBase": 1,
+              "max": "1",
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": null,
+          "description": "",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 12,
+            "y": 10
+          },
+          "hiddenSeries": false,
+          "id": 23,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": true,
+            "min": true,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null as zero",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "7.5.2",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "exemplar": false,
+              "expr": "histogram_quantile(0.95, sum(rate(envoy_http_ingress_http_downstream_rq_time_bucket{virtual_deployment_name=\"mesh_name/home-v1\"}[$latencyGranularity])) by (le))",
+              "interval": "",
+              "legendFormat": "v1",
+              "refId": "A"
+            },
+            {
+              "exemplar": false,
+              "expr": "histogram_quantile(0.95, sum(rate(envoy_http_ingress_http_downstream_rq_time_bucket{virtual_deployment_name=\"mesh_name/home-v2\"}[$latencyGranularity])) by (le))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "v2",
+              "refId": "B"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Latency (p95)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ms",
+              "label": "",
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": null,
+          "description": "",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 0,
+            "y": 19
+          },
+          "hiddenSeries": false,
+          "id": 28,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": true,
+            "min": true,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "7.5.2",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "exemplar": false,
+              "expr": "clamp_max((sum(rate(envoy_http_egress_http_downstream_rq_2xx{virtual_deployment_name=\"mesh_name/home-v1\"}[$successRateGranularity]) + rate(envoy_http_egress_http_downstream_rq_3xx{virtual_deployment_name=\"mesh_name/home-v1\"}[$successRateGranularity]) + rate(envoy_http_egress_http_downstream_rq_4xx{virtual_deployment_name=\"mesh_name/home-v1\"}[$successRateGranularity])) by (virtual_deployment_name)) / sum(rate(envoy_http_egress_http_downstream_rq_total{virtual_deployment_name=\"mesh_name/home-v1\"}[$successRateGranularity])) by (virtual_deployment_name), 1)",
+              "interval": "",
+              "legendFormat": "v1",
+              "refId": "A"
+            },
+            {
+              "exemplar": false,
+              "expr": "clamp_max((sum(rate(envoy_http_egress_http_downstream_rq_2xx{virtual_deployment_name=\"mesh_name/home-v2\"}[$successRateGranularity]) + rate(envoy_http_egress_http_downstream_rq_3xx{virtual_deployment_name=\"mesh_name/reviews-v2\"}[$successRateGranularity]) + rate(envoy_http_egress_http_downstream_rq_4xx{virtual_deployment_name=\"mesh_name/home-v2\"}[$successRateGranularity])) by (virtual_deployment_name)) / sum(rate(envoy_http_egress_http_downstream_rq_total{virtual_deployment_name=\"mesh_name/home-v2\"}[$successRateGranularity])) by (virtual_deployment_name), 1)",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "v2",
+              "refId": "B"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Egress Success Rate",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "percentunit",
+              "label": "",
+              "logBase": 1,
+              "max": "1",
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 19
+          },
+          "hiddenSeries": false,
+          "id": 26,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null as zero",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "7.5.2",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "exemplar": false,
+              "expr": "sum(rate(envoy_http_ingress_http_downstream_rq_total{virtual_deployment_name=\"mesh_name/home-v1\"}[$successRateGranularity])) by (virtual_service_name) / sum(rate(envoy_http_ingress_http_downstream_rq_total{virtual_service_name=\"mesh_name/home\"}[$successRateGranularity])) by (virtual_service_name)",
+              "interval": "",
+              "legendFormat": "v1",
+              "refId": "A"
+            },
+            {
+              "exemplar": false,
+              "expr": "sum(rate(envoy_http_ingress_http_downstream_rq_total{virtual_deployment_name=\"mesh_name/home-v2\"}[$successRateGranularity])) by (virtual_service_name) / sum(rate(envoy_http_ingress_http_downstream_rq_total{virtual_service_name=\"mesh_name/home\"}[$successRateGranularity])) by (virtual_service_name)",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "v2",
+              "refId": "B"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Traffic Split",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "percentunit",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        }
+      ],
+      "refresh": "5s",
+      "schemaVersion": 27,
+      "style": "dark",
+      "tags": [],
+      "templating": {
+        "list": [
+          {
+            "allValue": null,
+            "current": {
+              "selected": true,
+              "text": "5m",
+              "value": "5m"
+            },
+            "description": null,
+            "error": null,
+            "hide": 0,
+            "includeAll": false,
+            "label": "Success Rate Granularity",
+            "multi": false,
+            "name": "successRateGranularity",
+            "options": [
+              {
+                "selected": false,
+                "text": "1m",
+                "value": "1m"
+              },
+              {
+                "selected": true,
+                "text": "5m",
+                "value": "5m"
+              },
+              {
+                "selected": false,
+                "text": "10m",
+                "value": "10m"
+              },
+              {
+                "selected": false,
+                "text": "15m",
+                "value": "15m"
+              }
+            ],
+            "query": "1m,5m,10m,15m",
+            "queryValue": "",
+            "skipUrlSync": false,
+            "type": "custom"
+          },
+          {
+            "allValue": null,
+            "current": {
+              "selected": true,
+              "text": "1m",
+              "value": "1m"
+            },
+            "description": null,
+            "error": null,
+            "hide": 0,
+            "includeAll": false,
+            "label": "Latency Granularity",
+            "multi": false,
+            "name": "latencyGranularity",
+            "options": [
+              {
+                "selected": true,
+                "text": "1m",
+                "value": "1m"
+              },
+              {
+                "selected": false,
+                "text": "5m",
+                "value": "5m"
+              },
+              {
+                "selected": false,
+                "text": "10m",
+                "value": "10m"
+              },
+              {
+                "selected": false,
+                "text": "15m",
+                "value": "15m"
+              }
+            ],
+            "query": "1m,5m,10m,15m",
+            "queryValue": "",
+            "skipUrlSync": false,
+            "type": "custom"
+          }
+        ]
+      },
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "",
+      "title": "OCI Service Mesh Dashboard",
+      "uid": "7-yqJP97k",
+      "version": 1
+    }
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: mesh_name-grafana-dashboards
+  namespace: monitoring

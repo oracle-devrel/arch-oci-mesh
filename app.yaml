@@ -1,0 +1,196 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: home
+  namespace: mesh_name
+  labels:
+    app: home
+    service: home
+spec:
+  ports:
+    - port: 3000
+      name: http
+  selector:
+    app: home
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: home-v1
+  namespace: mesh_name
+  labels:
+    app: home
+    service: home
+    version: v1
+spec:
+  ports:
+    - port: 3000
+      name: http
+  selector:
+    app: home
+    version: v1
+---    
+apiVersion: v1
+kind: Service
+metadata:
+  name: home-v2
+  namespace: mesh_name
+  labels:
+    app: home
+    service: home
+    version: v2
+spec:
+  ports:
+    - port: 3000
+      name: http
+  selector:
+    app: home
+    version: v2
+---    
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: meshdemo-home
+  namespace: mesh_name
+  labels:
+    account: home
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: home-v1
+  namespace: mesh_name
+  labels:
+    app: home
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: home
+      version: v1
+  template:
+    metadata:
+      namespace: mesh_name
+      labels:
+        app: home
+        version: v1
+    spec:
+      serviceAccountName: meshdemo-home
+      containers:
+        - name: home
+          image: meshdemo_registry/mesh_name-homesvc:v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          securityContext:
+            runAsUser: 1000
+      imagePullSecrets:
+        - name: ocirsecret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: home-v2
+  namespace: mesh_name
+  labels:
+    app: home
+    version: v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: home
+      version: v2
+  template:
+    metadata:
+      namespace: mesh_name
+      labels:
+        app: home
+        version: v2
+    spec:
+      serviceAccountName: meshdemo-home
+      containers:
+        - name: home
+          image: meshdemo_registry/mesh_name-homesvc:v2
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          securityContext:
+            runAsUser: 1000
+      imagePullSecrets:
+        - name: ocirsecret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: price
+  namespace: mesh_name
+  labels:
+    app: price
+    service: price
+spec:
+  ports:
+    - port: 3010
+      name: http
+  selector:
+    app: price
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: price-v1
+  namespace: mesh_name
+  labels:
+    app: price
+    service: price
+    version: v1
+spec:
+  ports:
+    - port: 3010
+      name: http
+  selector:
+    app: price
+    version: v1
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: meshdemo-price
+  namespace: mesh_name
+  labels:
+    account: price
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: price-v1
+  namespace: mesh_name
+  labels:
+    app: price
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: price
+      version: v1
+  template:
+    metadata:
+      namespace: mesh_name
+      labels:
+        app: price
+        version: v1
+    spec:
+      serviceAccountName: meshdemo-price
+      containers:
+        - name: price
+          image: meshdemo_registry/mesh_name-pricesvc:v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3010
+          securityContext:
+            runAsUser: 1000
+      imagePullSecrets:
+        - name: ocirsecret
+---

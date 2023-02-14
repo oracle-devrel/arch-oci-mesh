@@ -1,0 +1,13 @@
+.babelrc
+.gitignore
+.openapi-generator-ignore
+.travis.yml
+README.md
+docs/FreeApi.md
+git_push.sh
+mocha.opts
+package.json
+src/ApiClient.js
+src/api/FreeApi.js
+src/index.js
+test/api/FreeApi.spec.js
