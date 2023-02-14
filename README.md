@@ -16,6 +16,9 @@ Install Oracle Services Operator for Kubernetes (OSOK) to your OKE cluster, see 
 https://github.com/oracle/oci-service-operator/blob/main/docs/installation.md#install-operator-sdk</a>
 
 <p>
+<img src="service-mesh-atp.png" width="800" />
+    
+<p>
 Open Cloud shell from OCI Console
     
 <p>
