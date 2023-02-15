@@ -1,0 +1,335 @@
+kind: Mesh
+apiVersion: servicemesh.oci.oracle.com/v1beta1
+metadata:
+  name: mesh_name
+  namespace: mesh_name
+spec:
+  compartmentId: mesh_compartment
+  certificateAuthorities:
+    - id: mesh_ca_ocid
+  displayName: mesh_name
+  mtls:
+    minimum: PERMISSIVE
+---
+kind: VirtualService
+apiVersion: servicemesh.oci.oracle.com/v1beta1
+metadata:
+  name: home
+  namespace: mesh_name
+spec:
+  mesh:
+    ref:
+      name: mesh_name
+  defaultRoutingPolicy:
+    type: UNIFORM
+  compartmentId: mesh_compartment
+  hosts:
+    - home:3000
+    - home
+---
+kind: VirtualDeployment
+apiVersion: servicemesh.oci.oracle.com/v1beta1
+metadata:
+  name: home-v1
+  namespace: mesh_name
+spec:
+  virtualService:
+    ref:
+      name: home
+  compartmentId: mesh_compartment
+  listener:
+    - port: 3000
+      protocol: HTTP
+  accessLogging:
+    isEnabled: true
+  serviceDiscovery:
+    type: DNS
+    hostname: home-v1
+---
+kind: VirtualDeployment
+apiVersion: servicemesh.oci.oracle.com/v1beta1
+metadata:
+  name: home-v2
+  namespace: mesh_name
+spec:
+  virtualService:
+    ref:
+      name: home
+  compartmentId: mesh_compartment
+  listener:
+    - port: 3000
+      protocol: HTTP
+  accessLogging:
+    isEnabled: true
+  serviceDiscovery:
+    type: DNS
+    hostname: home-v2
+---
+kind: VirtualService
+apiVersion: servicemesh.oci.oracle.com/v1beta1
+metadata:
+  name: price
+  namespace: mesh_name
+spec:
+  mesh:
+    ref:
+      name: mesh_name
+  defaultRoutingPolicy:
+    type: UNIFORM
+  compartmentId: mesh_compartment
+  hosts:
+    - price:3010
+    - price
+---
+kind: VirtualDeployment
+apiVersion: servicemesh.oci.oracle.com/v1beta1
+metadata:
+  name: price-v1
+  namespace: mesh_name
+spec:
+  virtualService:
+    ref:
+      name: price
+  compartmentId: mesh_compartment
+  listener:
+    - port: 3010
+      protocol: HTTP
+  accessLogging:
+    isEnabled: true
+  serviceDiscovery:
+    type: DNS
+    hostname: price-v1
+---
+apiVersion: servicemesh.oci.oracle.com/v1beta1
+kind: VirtualServiceRouteTable
+metadata:
+  name: home-route-table
+  namespace: mesh_name
+spec:
+  compartmentId: mesh_compartment
+  virtualService:
+    ref:
+      name: home
+  routeRules:
+    - httpRoute:
+        destinations:
+          - virtualDeployment:
+              ref:
+                name: home-v1
+            weight: 20
+            port: 3000
+          - virtualDeployment:
+              ref:
+                name: home-v2
+            weight: 80
+            port: 3000
+        isGrpc: false
+        path: /
+        pathType: PREFIX
+---
+apiVersion: servicemesh.oci.oracle.com/v1beta1
+kind: VirtualServiceRouteTable
+metadata:
+  name: price-route-table
+  namespace: mesh_name
+spec:
+  compartmentId: mesh_compartment
+  virtualService:
+    ref:
+      name: price
+  routeRules:
+    - httpRoute:
+        destinations:
+          - virtualDeployment:
+              ref:
+                name: price-v1
+            weight: 100
+            port: 3010
+        isGrpc: false
+        path: /
+        pathType: PREFIX
+---
+kind: IngressGateway
+apiVersion: servicemesh.oci.oracle.com/v1beta1
+metadata:
+  name: mesh-ingress-gateway
+  namespace: mesh_name
+spec:
+  compartmentId: mesh_compartment
+  mesh:
+    ref:
+      name: mesh_name
+  hosts:
+    - name: meshHost
+      hostnames:
+        - home.mesh_dns_domain
+        - home.mesh_dns_domain:3000
+      listeners:
+        - port: 3000
+          protocol: HTTP
+          tls:
+            mode: DISABLED
+  accessLogging:
+    isEnabled: true
+---
+apiVersion: servicemesh.oci.oracle.com/v1beta1
+kind: IngressGatewayDeployment
+metadata:
+  name: mesh-ingress-gateway-deployment
+  namespace: mesh_name
+spec:
+  ingressGateway:
+    ref:
+      name: mesh-ingress-gateway
+  deployment:
+    autoscaling:
+      minPods: 1
+      maxPods: 1
+  ports:
+    - protocol: TCP
+      port: 3000
+      serviceport: 80
+  service:
+    type: LoadBalancer
+---
+apiVersion: servicemesh.oci.oracle.com/v1beta1
+kind: IngressGatewayRouteTable
+metadata:
+  name: mesh-ingress-gateway-route-table
+  namespace: mesh_name
+spec:
+  compartmentId: mesh_compartment
+  ingressGateway:
+    ref:
+      name: mesh-ingress-gateway
+  routeRules:
+    - httpRoute:
+        path: /
+        pathType: PREFIX
+        isGrpc: false
+        destinations:
+          - virtualService:
+              ref:
+                name: home
+            weight: 100
+            port: 3000
+        ingressGatewayHost:
+          name: meshHost
+---
+kind: IngressGateway
+apiVersion: servicemesh.oci.oracle.com/v1beta1
+metadata:
+  name: mesh-admin-ingress-gateway
+  namespace: mesh_name
+spec:
+  compartmentId: mesh_compartment
+  mesh:
+    ref:
+      name: mesh_name
+  hosts:
+    - name: meshAdminHost
+      hostnames:
+        - admin.mesh_dns_domain
+        - admin.mesh_dns_domain:3010
+      listeners:
+        - port: 3010
+          protocol: HTTP
+          tls:
+            mode: DISABLED
+  accessLogging:
+    isEnabled: true
+---
+apiVersion: servicemesh.oci.oracle.com/v1beta1
+kind: IngressGatewayDeployment
+metadata:
+  name: mesh-admin-ingress-gateway-deployment
+  namespace: mesh_name
+spec:
+  ingressGateway:
+    ref:
+      name: mesh-admin-ingress-gateway
+  deployment:
+    autoscaling:
+      minPods: 1
+      maxPods: 1
+  ports:
+    - protocol: TCP
+      port: 3010
+      serviceport: 80
+  service:
+    type: LoadBalancer
+---
+apiVersion: servicemesh.oci.oracle.com/v1beta1
+kind: IngressGatewayRouteTable
+metadata:
+  name: mesh-admin-ingress-gateway-route-table
+  namespace: mesh_name
+spec:
+  compartmentId: mesh_compartment
+  ingressGateway:
+    ref:
+      name: mesh-admin-ingress-gateway
+  routeRules:
+    - httpRoute:
+        path: /
+        pathType: PREFIX
+        isGrpc: false
+        destinations:
+          - virtualService:
+              ref:
+                name: price
+            weight: 100
+            port: 3010
+        ingressGatewayHost:
+          name: meshAdminHost
+---
+kind: AccessPolicy
+apiVersion: servicemesh.oci.oracle.com/v1beta1
+metadata:
+  name: mesh-policy
+  namespace: mesh_name
+spec:
+  mesh:
+    ref:
+      name: mesh_name
+  compartmentId: mesh_compartment
+  rules:
+    - action: ALLOW
+      source:
+        ingressGateway:
+          ref:
+            name: mesh-ingress-gateway
+      destination:
+        virtualService:
+          ref:
+            name: home
+    - action: ALLOW
+      source:
+        virtualService:
+          ref:
+            name: home
+      destination:
+        virtualService:
+          ref:
+            name: price
+    - action: ALLOW
+      source:
+        virtualService:
+          ref:
+            name: price
+      destination:
+        externalService:
+          httpsExternalService:
+            hostnames:
+            -  "*"
+            ports: []
+    - action: ALLOW
+      source:
+        ingressGateway:
+          ref:
+            name: mesh-admin-ingress-gateway
+      destination:
+        virtualService:
+          ref:
+            name: price
+---

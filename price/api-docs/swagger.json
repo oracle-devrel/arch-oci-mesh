@@ -1,0 +1,64 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "The pricing API",
+    "version": "1.0.0",
+    "title": "The pricing API"
+  },
+  "tags": [
+    {
+      "name": "Pricing"
+    }
+  ],
+  "host": "price:3010",
+  "paths": {
+    "/free": {
+      "get": {
+        "summary": "Gets free tier price with pricing options",
+        "tags": [
+          "free"
+        ],
+        "responses": {
+          "200": {
+            "description": "Free tier pricing with pricing options"
+          },
+          "500": {
+            "description": "Some server error"
+          }
+        }
+      }
+    },
+    "/pro": {
+      "get": {
+        "summary": "Gets pro tier price with pricing options",
+        "tags": [
+          "free"
+        ],
+        "responses": {
+          "200": {
+            "description": "Pro tier pricing with pricing options"
+          },
+          "500": {
+            "description": "Some server error"
+          }
+        }
+      }
+    },
+    "/enterprise": {
+      "get": {
+        "summary": "Gets enterprise tier price with pricing options",
+        "tags": [
+          "free"
+        ],
+        "responses": {
+          "200": {
+            "description": "Enterprise tier pricing with pricing options"
+          },
+          "500": {
+            "description": "Some server error"
+          }
+        }
+      }
+    }
+  }
+}

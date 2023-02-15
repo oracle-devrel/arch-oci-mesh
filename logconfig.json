@@ -1,0 +1,26 @@
+{
+  "configurationType": "LOGGING",
+    "destination": {
+      "logObjectId": "log_object_ocid"
+    },
+    "sources": [
+      {
+        "name": "proxylogs",
+        "parser": {
+          "fieldTimeKey": null,
+          "isEstimateCurrentEvent": null,
+          "isKeepTimeKey": null,
+          "isNullEmptyString": null,
+          "messageKey": null,
+          "nullValuePattern": null,
+          "parserType": "NONE",
+          "timeoutInMilliseconds": null,
+          "types": null
+        },
+        "paths": [
+          "/var/log/containers/*mesh_name*oci-sm-proxy*.log"
+        ],
+        "source-type": "LOG_TAIL"
+      }
+    ]
+}

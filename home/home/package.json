@@ -1,0 +1,23 @@
+{
+  "name": "meshdemo home component",
+  "version": "1.0.0",
+  "description": "home microservice for meshdemo",
+  "main": "home.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mikarinneoracle/meshdemo.git"
+  },
+  "author": "mika.rinne@oracle.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mikarinneoracle/meshdemo/issues"
+  },
+  "homepage": "https://github.com/mikarinneoracle/meshdemo#readme",
+  "dependencies": {
+    "express": "^4.18.1"
+  },
+  "type": "module"
+}
