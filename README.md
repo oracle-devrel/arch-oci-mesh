@@ -22,8 +22,8 @@ Open Cloud shell from OCI Console
 <p>
 Run
 <pre>
-git clone https://github.com/mikarinneoracle/oci-service-mesh.git
-cd oci-service-mesh
+git clone https://github.com/oracle-devrel/arch-oci-mesh.git
+cd arch-oci-mesh
 </pre>
 
 ## Setup environment
