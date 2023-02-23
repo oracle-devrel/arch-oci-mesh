@@ -84,7 +84,7 @@ async function queryPrice(tier) {
     const options = { outFormat: oracledb.OUT_FORMAT_OBJECT };
     const result = await connection.execute(sql, binds, options);
     const row = result.rows[0];
-    const tierOptions = await queryOptions(tier);
+    const tierOptions = await queryOptions(tier, connection);
     var json = { 'price' : {'monthly' : JSON.stringify(row.PRICE_MO), 'storage' : JSON.stringify(row.STORAGE), 'users' : JSON.stringify(row.USERS), 'support' : JSON.stringify(row.SUPPORT).replace(/['"]+/g, '') }, options : tierOptions };
     return json;
   } catch (err) {
@@ -101,11 +101,8 @@ async function queryPrice(tier) {
   }
 }
 
-async function queryOptions(tier) {
-  let connection;
+async function queryOptions(tier, connection) {
   try {
-    // Get a connection from the default pool
-    connection = await oracledb.getConnection();
     const sql = `select ISPUBLIC, ISPRIVATE, ISPERMISSIONS, ISSHARING, ISUNLIMITED, ISEXTRASEC FROM OPTIONS WHERE TIER = :tier`;
     const binds = [tier];
     const options = { outFormat: oracledb.OUT_FORMAT_OBJECT };
@@ -115,17 +112,6 @@ async function queryOptions(tier) {
     return json;
   } catch (err) {
     console.error(err);
-    closePoolAndExit();
-  } finally {
-    if (connection) {
-      try {
-        // Put the connection back in the pool
-        await connection.close();
-      } catch (err) {
-        console.error(err);
-        //closePoolAndExit();
-      }
-    }
   }
 }
 
