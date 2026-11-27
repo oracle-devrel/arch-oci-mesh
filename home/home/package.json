@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/mikarinneoracle/meshdemo#readme",
   "dependencies": {
-    "express": "^4.22.0"
+    "express": "^4.22.3"
   },
   "type": "module"
 }
